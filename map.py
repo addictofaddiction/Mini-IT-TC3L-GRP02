@@ -55,7 +55,7 @@ def game_start():
         '...............',
         '...............',
     ]
-    FPS = 6
+    FPS = 30
 
     class Spritesheet:
         def __init__(self, file):
@@ -183,8 +183,8 @@ while run:
         if event.type == pygame.MOUSEBUTTONDOWN:
             if start_button_rect.collidepoint(event.pos):
                 game_start()  
-            if quit_button_rect.collidepoint(event.pos):
                 run = False
+            
 
     draw_button(start_button_rect, "Start")
     draw_button(quit_button_rect, "Quit")
