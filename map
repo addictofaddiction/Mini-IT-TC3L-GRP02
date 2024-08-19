@@ -22,7 +22,7 @@ tilemap = [
     '...............',
     '...............',
 ]
-FPS = 6
+FPS = 30
 
 class Spritesheet:
     def __init__(self,file):
