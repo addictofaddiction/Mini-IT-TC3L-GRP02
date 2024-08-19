@@ -2,11 +2,8 @@ import pygame
 import sys
 
 player_layer = 3
-block_layer = 2
 ground_layer = 1
-red =(255,0,0)
 black = (0,0,0)
-green = (0,255,0)
 tilesize = 44
 tilemap = [
     '...............',
@@ -25,7 +22,7 @@ tilemap = [
     '...............',
     '...............',
 ]
-FPS = 6
+FPS = 30
 
 class Spritesheet:
     def __init__(self,file):
