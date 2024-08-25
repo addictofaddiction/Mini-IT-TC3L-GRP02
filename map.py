@@ -1,5 +1,13 @@
 import pygame
 import sys
+import json
+import os
+
+starting_gold = {
+    "character_gold":300  
+    }
+
+
 
 pygame.init()
 
@@ -15,12 +23,14 @@ GRAY = (100, 100, 100)
 
 font = pygame.font.Font(None, 74)
 
-button_width = 200
+button_width = 300
 button_height = 50
+button_spacing = 20
 
 # Button positions
-start_button_rect = pygame.Rect((SCREEN_WIDTH // 2 - button_width // 2, SCREEN_HEIGHT // 2 - 100), (button_width, button_height))
-quit_button_rect = pygame.Rect((SCREEN_WIDTH // 2 - button_width // 2, SCREEN_HEIGHT // 2 + 50), (button_width, button_height))
+continue_button_rect = pygame.Rect((SCREEN_WIDTH // 2 - button_width // 2, SCREEN_HEIGHT // 2 - button_height - button_spacing), (button_width, button_height))
+start_button_rect = pygame.Rect((SCREEN_WIDTH // 2 - button_width // 2, SCREEN_HEIGHT // 2), (button_width, button_height))
+quit_button_rect = pygame.Rect((SCREEN_WIDTH // 2 - button_width // 2, SCREEN_HEIGHT // 2 + button_height + button_spacing), (button_width, button_height))
 
 def draw_text(text, font, text_col, x, y):
     img = font.render(text, True, text_col)
@@ -176,16 +186,26 @@ def game_start():
 run = True
 while run:
     screen.fill((0, 0, 0))
+    
+    search_file_existance = os.path.isfile("character_gold.json") 
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
         if event.type == pygame.MOUSEBUTTONDOWN:
             if start_button_rect.collidepoint(event.pos):
+                with open('character_gold.json', "w") as character_gold_file:
+                    json.dump(starting_gold, character_gold_file)
                 game_start()  
                 run = False
-            
-
+            if search_file_existance and continue_button_rect.collidepoint(event.pos):  
+                game_start()  
+                run = False
+            if quit_button_rect.collidepoint(event.pos):
+                run = False
+    # Draw buttons
+    if search_file_existance: 
+        draw_button(continue_button_rect, "Continue") 
     draw_button(start_button_rect, "Start")
     draw_button(quit_button_rect, "Quit")
 
