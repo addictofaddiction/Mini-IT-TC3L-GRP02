@@ -69,8 +69,6 @@ def draw_text(text, font, text_col, x, y):
         screen.blit(img, (x, y))
 
 def draw_button(rect, text):
-    pygame.draw.rect(screen, GRAY, rect)
-    draw_text(text, font, WHITE, rect.x + 20, rect.y + 5)
         pygame.draw.rect(screen, GRAY, rect)
         draw_text(text, font, WHITE, rect.x + 20, rect.y + 5)
 
