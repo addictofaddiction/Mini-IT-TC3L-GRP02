@@ -1,4 +1,5 @@
 import pygame
+import random
 
 pygame.init()
 
@@ -6,13 +7,22 @@ clock = pygame.time.Clock()
 fps = 60
 
 
-#game window]
+#game window
 bottom_panel =150
 screen_width = 800
 screen_height = 400 + bottom_panel
 
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption('Battle')
+
+#define game variables
+current_fighter = 1
+total_fighters = 3
+action_cooldown = 0
+action_wait_time = 90
+attack = False
+potion = False
+clicked  = False # will look for a mouse click
 
 
 #define fonts
@@ -28,6 +38,8 @@ green = (0, 255, 0)
 background_img = pygame.image.load('img/Background/background.png').convert_alpha()
 #panel image
 panel_img = pygame.image.load('img/Icons/panel.png').convert_alpha()
+#sword imagae
+sword_img = pygame.image.load('img/Icons/sword.png').convert_alpha()
 
 #create function for drawing text
 def draw_text(text, front, text_col, x, y):
@@ -54,40 +66,52 @@ def draw_panel():
 
 #fighter
 class Fighter():
-    def __init__(sel, x, y, name, max_hp, strength, potions):
-        sel.name = name
-        sel.max_hp = max_hp
-        sel.hp = max_hp
-        sel.strength = strength
-        sel.start_potions = potions
-        sel.alive = True
-        img = pygame.image.load(f'img/{sel.name}/idle/0.png')
-        sel.image = pygame.transform.scale(img, (img.get_width() * 3, img.get_height() * 3))
-        sel.rect = sel.image.get_rect()
-        sel.rect.center = (x, y)
+    def __init__(self, x, y, name, max_hp, strength, potions):
+        self.name = name
+        self.max_hp = max_hp
+        self.hp = max_hp
+        self.strength = strength
+        self.start_potions = potions
+        self.alive = True
+        img = pygame.image.load(f'img/{self.name}/idle/0.png')
+        self.image = pygame.transform.scale(img, (img.get_width() * 3, img.get_height() * 3))
+        self.rect = self.image.get_rect()
+        self.rect.center = (x, y)
+
+
+    def attack(self, target):
+        #deal damage to enemy
+        rand = random.randint(-5, 5)
+        damage = self.strength + rand
+        target.hp -= damage
+        #check if target has died
+        if target.hp < 1:
+            target.hp = 0
+            target.alive = False
 
 
 
-    def draw(sel):
-        screen.blit(sel.image, sel.rect)
+
+    def draw(self):
+        screen.blit(self.image, self.rect)
 
 
 
 class HealthBar():
-    def __init__(sel, x ,y, hp, max_hp):
-        sel.x = x
-        sel.y = y
-        sel.hp = hp
-        sel.max_hp = max_hp
+    def __init__(self, x ,y, hp, max_hp):
+        self.x = x
+        self.y = y
+        self.hp = hp
+        self.max_hp = max_hp
     
     
-    def draw(sel, hp):
+    def draw(self, hp):
         #update with new health
-        sel.hp = hp
+        self.hp = hp
         #calculate health ratio
-        ratio = sel.hp / sel.max_hp
-        pygame.draw.rect(screen, red, (sel.x, sel.y, 150, 20))
-        pygame.draw.rect(screen, green, (sel.x, sel.y, 150 * ratio, 20))
+        ratio = self.hp / self.max_hp
+        pygame.draw.rect(screen, red, (self.x, self.y, 150, 20))
+        pygame.draw.rect(screen, green, (self.x, self.y, 150 * ratio, 20))
                 
 
 
@@ -123,10 +147,66 @@ while run:
     knight.draw()
     for bandit in bandit_list:
         bandit.draw()
+    
+
+    #control player actions
+    #reset action variables
+    attack = False
+    potion = False
+    target = None
+    #this one here to make sure the mouse is visible
+    pygame.mouse.set_visible(True)
+    pos = pygame.mouse.get_pos()
+    for count, bandit in enumerate(bandit_list):
+        if bandit.rect.collidepoint(pos):
+            #im gonna hide the mouse
+            pygame.mouse.set_visible(False)
+            #show sword icon as mouse icon/cursor
+            screen.blit(sword_img, pos)
+            if clicked == True:
+                attack = True
+                target = bandit_list[count]
+
+
+    #player action
+    if knight.alive == True:
+        if current_fighter == 1:
+            action_cooldown += 1
+            if action_cooldown >= action_wait_time:
+                #look for player action
+                #attack
+                if attack == True and target != None:
+                   knight.attack(target)
+                   current_fighter += 1
+                   action_cooldown
+
+
+    #enemy action
+    for count, bandit in enumerate(bandit_list):
+        if current_fighter == 2  + count:
+            if bandit.alive == True:
+                action_cooldown += 1
+                if action_cooldown >= action_wait_time:
+                    #attack
+                    bandit.attack(knight)
+                    current_fighter += 1
+                    action_cooldown = 0
+            else:
+                current_fighter += 1        
+    
+    #if all fighters have had a turn then reset
+    if current_fighter > total_fighters:
+        current_fighter = 1
+
+      
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            clicked = True
+        else:
+            clicked = False
 
     pygame.display.update()
 
