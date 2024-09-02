@@ -56,8 +56,8 @@ def draw_bg():
 def draw_panel():
     #drawn panel rectangle
     screen.blit(panel_img, (0, screen_height - bottom_panel))
-    #show knight stats
-    draw_text(f'{knight.name} HP: {knight.hp}', font, red, 100, screen_height - bottom_panel +10)
+    #show player's creature's  stats
+    draw_text(f'{player_creature.name} HP: {player_creature.hp}', font, red, 100, screen_height - bottom_panel +10)
     for count, i in enumerate(bandit_list):
         #show name and health
          draw_text(f'{i.name} HP: {i.hp}', font, red, 550, (screen_height - bottom_panel +10) + count * 60)
@@ -115,7 +115,7 @@ class HealthBar():
                 
 
 
-knight = Fighter(200, 260, 'Knight', 30, 10, 3)
+player_creature = Fighter(200, 260, 'player_creature', 30, 10, 3)
 bandit1 = Fighter(550, 270, 'Bandit', 20, 6, 1)
 bandit2 = Fighter(700, 270, 'Bandit', 20, 6, 1)
 
@@ -123,7 +123,7 @@ bandit_list = []
 bandit_list.append(bandit1)
 bandit_list.append(bandit2)
 
-knight_health_bar = HealthBar(100, screen_height - bottom_panel + 40, knight.hp, knight.max_hp)
+player_creature_health_bar = HealthBar(100, screen_height - bottom_panel + 40, player_creature.hp, player_creature.max_hp)
 bandit1_health_bar = HealthBar(550, screen_height - bottom_panel + 40, bandit1.hp, bandit1.max_hp)
 bandit2_health_bar = HealthBar(550, screen_height - bottom_panel + 100, bandit2.hp, bandit2.max_hp)
 
@@ -139,12 +139,12 @@ while run:
 
     #draw panel
     draw_panel()
-    knight_health_bar.draw(knight.hp)
+    player_creature_health_bar.draw(player_creature.hp)
     bandit1_health_bar.draw(bandit1.hp)
     bandit2_health_bar.draw(bandit2.hp)
 
     #draw fighters
-    knight.draw()
+    player_creature.draw()
     for bandit in bandit_list:
         bandit.draw()
     
@@ -169,14 +169,14 @@ while run:
 
 
     #player action
-    if knight.alive == True:
+    if player_creature.alive == True:
         if current_fighter == 1:
             action_cooldown += 1
             if action_cooldown >= action_wait_time:
                 #look for player action
                 #attack
                 if attack == True and target != None:
-                   knight.attack(target)
+                   player_creature.attack(target)
                    current_fighter += 1
                    action_cooldown
 
@@ -188,7 +188,7 @@ while run:
                 action_cooldown += 1
                 if action_cooldown >= action_wait_time:
                     #attack
-                    bandit.attack(knight)
+                    bandit.attack(player_creature)
                     current_fighter += 1
                     action_cooldown = 0
             else:
