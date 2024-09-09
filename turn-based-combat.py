@@ -251,12 +251,12 @@ while run:
                             heal_amount = potion_effect
                         else: 
                             heal_amount = bandit.max_hp - bandit.hp
-                            bandit.hp += heal_amount 
-                            bandit.potions -= 1
-                            damage_text = DamageText(bandit.rect.centerx, bandit.rect.y, str(heal_amount), green)
-                            damage_text_group.add(damage_text)
-                            current_fighter += 1
-                            action_cooldown = 0
+                        bandit.hp += heal_amount 
+                        bandit.potions -= 1
+                        damage_text = DamageText(bandit.rect.centerx, bandit.rect.y, str(heal_amount), green)
+                        damage_text_group.add(damage_text)
+                        current_fighter += 1
+                        action_cooldown = 0
                     else:                   
                         #attack
                         bandit.attack(player_creature)
