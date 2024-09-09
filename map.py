@@ -155,6 +155,7 @@ def start_game():
             self._layer = player_layer
             self.groups = self.game.sprites
             pygame.sprite.Sprite.__init__(self,self.groups)
+            pygame.sprite.Sprite.__init__(self,self.groups) 
 
             with open('controls.json', 'r') as controls_file:
                 self.controls = json.load(controls_file)
