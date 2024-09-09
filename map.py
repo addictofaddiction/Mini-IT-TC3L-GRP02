@@ -154,12 +154,13 @@ def start_game():
             self.game = game
             self._layer = player_layer
             self.groups = self.game.sprites
-            pygame.sprite.Sprite.__init__(self,self.groups)
-            pygame.sprite.Sprite.__init__(self,self.groups) 
 
+            pygame.sprite.Sprite.__init__(self,self.groups) 
+            #pull controls folder
             with open('controls.json', 'r') as controls_file:
                 self.controls = json.load(controls_file)
                 self.x = x * tilesize
+                
             self.y = y * tilesize
             self.width = tilesize
             self.height = tilesize
@@ -181,6 +182,7 @@ def start_game():
             with open('save_file.json', 'w') as save_character_location:
                 json.dump(position, save_character_location)
         #loading chracter location
+
         def load_position(self):
             try:
                 with open('save_file.json', 'r') as f:
@@ -190,6 +192,12 @@ def start_game():
             except FileNotFoundError:
                     self.x = 13 * tilesize
                     self.y = 6 * tilesize
+                    start_spawn_default={
+                        'x':13,
+                        'y':6
+                    }
+                    with open('save_file.json', 'w') as default_location:
+                        json.dump(start_spawn_default,default_location)
 
         def update(self):
             self.movement()
