@@ -128,6 +128,17 @@ class DamageText(pygame.sprite.Sprite):
         self.image = font.render(damage, True, colour)
         self.rect = self.image.get_rect()
         self.rect.center = (x, y)
+        self.counter = 0
+
+
+    def update(self):
+        #move damage text up
+        self.rect.y -= 1
+        #delete the text after a few seconds
+        self.counter += 1
+        if self.counter > 30:
+            self.kill()
+
 
 
 
