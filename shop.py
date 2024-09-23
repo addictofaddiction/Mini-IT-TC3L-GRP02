@@ -89,6 +89,12 @@ def run_shop():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 shop_page = False
+                return None
+            
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    shop_page = False
+                    return current_gold
             #purchasing 
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if purchase1_rect.collidepoint(event.pos):

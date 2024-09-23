@@ -2,6 +2,7 @@ import pygame
 import math
 import sys
 import subprocess
+import shop
 
 pygame.mixer.init()
 pygame.mixer.music.load('bg_music.mp3')
@@ -35,7 +36,7 @@ tilemap = [
     'B........................bbbbb',
     '.B........................bbbb',
     'B.........................bbbb',
-    '.B...................bbbbbbbbb',
+    '.Blllllllllllllllllllbbbbbbbbb',
     
 ]
 FPS = 30
@@ -382,6 +383,7 @@ class Game:
         self.screen = pygame.display.set_mode((960,640))
         self.clock = pygame.time.Clock()
         self.running = True
+        self.playing = False
 
         self.character_spritesheet = Spritesheet('image/player.png')
         self.npc_sprisheet = Spritesheet('image/npc.png')
@@ -392,6 +394,8 @@ class Game:
         self.dialogue_active = False
         self.character = None
         self.npc = pygame.sprite.Group()
+        self.show_shop_flag = False
+        self.current_gold = 0
        
         
     def Tilemap(self):
@@ -426,7 +430,32 @@ class Game:
 
     def show_shop(self):
         self.dialogue_active = False
-        subprocess.run(["python", "shop.py"])
+        self.show_shop_flag = True
+        
+    def run_shop(self):
+        print("Running shop")
+        result = shop.run_shop()
+        if result is None:
+            self.playing = False
+            self.running = False
+        else:
+            self.current_gold = result
+        self.show_shop_flag = False
+        pygame.display.flip()
+        
+    
+        waiting = True
+        while waiting:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.playing = False
+                    self.running = False
+                    waiting = False
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        waiting = False
+
+        self.show_shop_flag = False
 
     def close_dialogue(self):
         self.dialogue_active = False
@@ -480,12 +509,18 @@ class Game:
 
 
     def main(self):
+        self.playing = True
         while self.playing:
             print("Main game loop iteration")
             self.events()
             self.update()
             self.draw()
-        self.running = False
+            
+            if self.show_shop_flag:
+                self.run_shop()
+
+        
+
 
 g = Game()
 g.new()
