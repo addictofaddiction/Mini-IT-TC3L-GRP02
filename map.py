@@ -28,6 +28,7 @@ pygame.display.set_caption("Main Menu")
 
 WHITE = (255, 255, 255)
 GRAY = (100, 100, 100)
+RED= (255, 0, 0)
 
 font = pygame.font.Font(None, 74)
 
@@ -49,8 +50,9 @@ def draw_text(text, font, text_col, x, y):
     img = font.render(text, True, text_col)
     screen.blit(img, (x, y))
 
-def draw_button(rect, text):
-    pygame.draw.rect(screen, GRAY, rect)
+def draw_button(rect, text, hover=False):
+    color = RED if hover else GRAY
+    pygame.draw.rect(screen, color, rect)
     draw_text(text, font, WHITE, rect.x + 20, rect.y + 5)
 
 #for keybinds
@@ -65,6 +67,8 @@ def settings():
     run_settings = True
     while run_settings:
         screen.fill((0, 0, 0))
+
+        mouse_pos = pygame.mouse.get_pos()
 
         # Event handling
         for event in pygame.event.get():
@@ -93,10 +97,11 @@ def settings():
         draw_text(f"Up: {pygame.key.name(controls['up'])}", font, WHITE, 100, 260)
         draw_text(f"Down: {pygame.key.name(controls['down'])}", font, WHITE, 100, 340)
 
-        draw_button(left_button_rect, "Change Left")
-        draw_button(right_button_rect, "Change Right")  
-        draw_button(up_button_rect, "Change Up")
-        draw_button(down_button_rect, "Change Down")
+        # Check if the mouse is hovering over buttons and change their color
+        draw_button(left_button_rect, "Change Left", left_button_rect.collidepoint(mouse_pos))
+        draw_button(right_button_rect, "Change Right", right_button_rect.collidepoint(mouse_pos))
+        draw_button(up_button_rect, "Change Up", up_button_rect.collidepoint(mouse_pos))
+        draw_button(down_button_rect, "Change Down", down_button_rect.collidepoint(mouse_pos))
 
         pygame.display.update()
 
@@ -455,9 +460,42 @@ class Ground(pygame.sprite.Sprite):
 
         self.image = self.game.terrain_spritesheet.get_sprite(300,300,self.width,self.height)
 
+<<<<<<< Updated upstream
         self.rect = self.image.get_rect()
         self.rect.x = self.x
         self.rect.y = self.y
+=======
+        def events(self):
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.character.save_position() 
+                    self.playing = False
+                    self.running = False
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        self.open_settings_menu()
+
+        def open_settings_menu(self):
+            settings()         
+
+        def update(self):
+            self.sprites.update()
+
+        def draw(self):
+            self.screen.fill(black)
+            self.sprites.draw(self.screen)
+            self.clock.tick(FPS)
+            pygame.display.update()
+
+
+
+        def main(self):
+            while self.playing:
+                self.events()
+                self.update()
+                self.draw()
+            self.running = False
+>>>>>>> Stashed changes
 
     
 
@@ -562,6 +600,7 @@ run = True
 while run:
     screen.fill((0, 0, 0))
 
+<<<<<<< Updated upstream
 search_file_existance = os.path.isfile("character_gold.json") 
 
 for event in pygame.event.get():
@@ -585,6 +624,32 @@ if search_file_existance:
     draw_button(continue_button_rect, "Continue") 
 draw_button(start_button_rect, "Start")
 draw_button(quit_button_rect, "Quit")
+=======
+    mouse_pos = pygame.mouse.get_pos()
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            run = False
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if start_button_rect.collidepoint(event.pos):
+                with open('character_gold.json', "w") as character_gold_file:
+                    json.dump(starting_gold, character_gold_file)
+                with open('controls.json', 'w') as controls_file:
+                    json.dump(default_controls, controls_file)
+                start_game()
+                run = False
+            if search_file_existance and continue_button_rect.collidepoint(event.pos):  
+                start_game()
+                run = False
+            if quit_button_rect.collidepoint(event.pos):
+                run = False
+
+    # Draw buttons with hover effect
+    if search_file_existance: 
+        draw_button(continue_button_rect, "Continue", continue_button_rect.collidepoint(mouse_pos))
+    draw_button(start_button_rect, "Start", start_button_rect.collidepoint(mouse_pos))
+    draw_button(quit_button_rect, "Quit", quit_button_rect.collidepoint(mouse_pos))
+>>>>>>> Stashed changes
 
 pygame.display.update()
 

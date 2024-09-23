@@ -14,7 +14,9 @@ pygame.display.set_caption("Shop")
 
 WHITE = (255, 255, 255)
 GRAY = (100, 100, 100)
-Yellow = (255, 255, 0)
+YELLOW = (255, 255, 0)
+RED = (255, 0, 0)
+
 
 font = pygame.font.Font(None, 50)
 gold_font = pygame.font.Font(None, 40)
@@ -47,10 +49,11 @@ def draw_text(text, font, text_col, x, y):
     img = font.render(text, True, text_col)
     screen.blit(img, (x, y))
 
-def draw_button(rect, text):
-    pygame.draw.rect(screen, GRAY, rect)
+def draw_button(rect, text, color):
+    pygame.draw.rect(screen, color, rect)
     draw_text(text, font, WHITE, rect.x + 20, rect.y + 5)
 
+<<<<<<< Updated upstream
 def load_gold():
     if os.path.exists("character_gold.json"):
         with open("character_gold.json", "r") as current_gold_file:
@@ -62,9 +65,15 @@ def load_gold():
 def save_gold(gold):
     with open("character_gold.json", "w") as file:
         json.dump({"character_gold": gold}, file)
-
+=======
+# Load gold amount from JSON
+with open("character_gold.json", "r") as current_gold_file:
+    data = json.load(current_gold_file)
+    current_gold = data.get("character_gold")
+>>>>>>> Stashed changes
 
 # Main menu loop
+<<<<<<< Updated upstream
 def run_shop():
     current_gold = load_gold()
     shop_page = True
@@ -74,12 +83,27 @@ def run_shop():
     # Display current gold
         gold_text = f"Gold: {current_gold}"
         draw_text(gold_text, gold_font, Yellow, 10, 10)
+=======
+shop_page = True
+
+purchase1_color = GRAY
+purchase2_color = GRAY
+purchase3_color = GRAY
+
+while shop_page:
+    screen.fill((0, 0, 0))
+    
+    # Display current gold
+    gold_text = f"Gold: {current_gold}"
+    draw_text(gold_text, gold_font, YELLOW, 10, 10)
+>>>>>>> Stashed changes
 
     # Draw images above buttons
         screen.blit(item1_image, image1_rect.topleft)
         screen.blit(item2_image, image2_rect.topleft)
         screen.blit(item3_image, image3_rect.topleft)
 
+<<<<<<< Updated upstream
     # Draw buttons
         draw_button(purchase1_rect, "100$")
         draw_button(purchase2_rect, "200$")
@@ -112,3 +136,58 @@ def run_shop():
                         
             pygame.display.update()
     return current_gold
+=======
+    # Draw buttons with hover effect colors
+    draw_button(purchase1_rect, "100$", purchase1_color)
+    draw_button(purchase2_rect, "200$", purchase2_color)
+    draw_button(purchase3_rect, "300$", purchase3_color)
+
+
+    for event in pygame.event.get():
+        if event.type == pygame.QUIT:
+            shop_page = False
+        
+        # Handle mouse motion for hover effect
+        if event.type == pygame.MOUSEMOTION:
+
+            if purchase1_rect.collidepoint(event.pos):
+                purchase1_color = RED
+            else:
+                purchase1_color = GRAY
+
+            if purchase2_rect.collidepoint(event.pos):
+                purchase2_color = RED
+            else:
+                purchase2_color = GRAY
+
+            if purchase3_rect.collidepoint(event.pos):
+                purchase3_color = RED
+            else:
+                purchase3_color = GRAY
+
+        # Handle purchasing when clicking
+        if event.type == pygame.MOUSEBUTTONDOWN:
+            if purchase1_rect.collidepoint(event.pos):
+                if current_gold >= 100:
+                    current_gold -= 100
+                    
+                    with open("character_gold.json", "w") as file:
+                        json.dump({"character_gold": current_gold}, file)
+            elif purchase2_rect.collidepoint(event.pos):
+                if current_gold >= 200:
+                    current_gold -= 200
+                    
+                    with open("character_gold.json", "w") as file:
+                        json.dump({"character_gold": current_gold}, file)
+            elif purchase3_rect.collidepoint(event.pos):
+                if current_gold >= 300:
+                    current_gold -= 300
+                    
+                    with open("character_gold.json", "w") as file:
+                        json.dump({"character_gold": current_gold}, file)
+
+    pygame.display.update()
+
+pygame.quit()
+sys.exit()
+>>>>>>> Stashed changes
