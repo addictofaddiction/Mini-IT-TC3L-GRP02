@@ -51,57 +51,73 @@ def draw_button(rect, text):
     pygame.draw.rect(screen, GRAY, rect)
     draw_text(text, font, WHITE, rect.x + 20, rect.y + 5)
 
+
+def load_gold():
+    if os.path.exists("character_gold.json"):
+        with open("character_gold.json", "r") as current_gold_file:
+            data = json.load(current_gold_file)
+            return data.get("character_gold", 0)
+    return 0
+
 #gold amount
-with open("character_gold.json", "r") as current_gold_file:
-    data = json.load(current_gold_file)
-    current_gold = data.get("character_gold")
+def save_gold(gold):
+    with open("character_gold.json", "w") as file:
+        json.dump({"character_gold": gold}, file)
 
 
 # Main menu loop
-shop_page = True
-while shop_page:
-    screen.fill((0, 0, 0))
-    
-    # Display current gold
-    gold_text = f"Gold: {current_gold}"
-    draw_text(gold_text, gold_font, Yellow, 10, 10)
+def run_shop():
+    current_gold = load_gold()
+    shop_page = True
+    while shop_page:
+        screen.fill((0, 0, 0))
+        
+        # Display current gold
+        gold_text = f"Gold: {current_gold}"
+        draw_text(gold_text, gold_font, Yellow, 10, 10)
 
-    # Draw images above buttons
-    screen.blit(item1_image, image1_rect.topleft)
-    screen.blit(item2_image, image2_rect.topleft)
-    screen.blit(item3_image, image3_rect.topleft)
+        # Draw images above buttons
+        screen.blit(item1_image, image1_rect.topleft)
+        screen.blit(item2_image, image2_rect.topleft)
+        screen.blit(item3_image, image3_rect.topleft)
 
-    # Draw buttons
-    draw_button(purchase1_rect, "100$")
-    draw_button(purchase2_rect, "200$")
-    draw_button(purchase3_rect, "300$")
+        # Draw buttons
+        draw_button(purchase1_rect, "100$")
+        draw_button(purchase2_rect, "200$")
+        draw_button(purchase3_rect, "300$")
 
-    # Event handling
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            shop_page = False
-        #purchasing 
-        if event.type == pygame.MOUSEBUTTONDOWN:
-            if purchase1_rect.collidepoint(event.pos):
-                if current_gold >= 100:
-                    current_gold -= 100
-                    
-                    with open("character_gold.json", "w") as file:
-                        json.dump({"character_gold": current_gold}, file)
-            elif purchase2_rect.collidepoint(event.pos):
-                if current_gold >= 200:
-                    current_gold -= 200
-                    
-                    with open("character_gold.json", "w") as file:
-                        json.dump({"character_gold": current_gold}, file)
-            elif purchase3_rect.collidepoint(event.pos):
-                if current_gold >= 300:
-                    current_gold -= 300
-                    
-                    with open("character_gold.json", "w") as file:
-                        json.dump({"character_gold": current_gold}, file)
+        # Event handling
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                shop_page = False
+                return None
+            
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    shop_page = False
+                    return current_gold
+            #purchasing 
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if purchase1_rect.collidepoint(event.pos):
+                    if current_gold >= 100:
+                        current_gold -= 100
+                        save_gold(current_gold)
+                        
+                        with open("character_gold.json", "w") as file:
+                            json.dump({"character_gold": current_gold}, file)
+                elif purchase2_rect.collidepoint(event.pos):
+                    if current_gold >= 200:
+                        current_gold -= 200
+                        save_gold(current_gold)
+                        
+                        with open("character_gold.json", "w") as file:
+                            json.dump({"character_gold": current_gold}, file)
+                elif purchase3_rect.collidepoint(event.pos):
+                    if current_gold >= 300:
+                        current_gold -= 300
+                        save_gold(current_gold)
+                        
+                        
 
-    pygame.display.update()
-
-pygame.quit()
-sys.exit()
+            pygame.display.update()
+    return current_gold
