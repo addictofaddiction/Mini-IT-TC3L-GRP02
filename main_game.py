@@ -358,6 +358,7 @@ def start_game():
             button_y = self.box_y + self.box_height + 10
             button = Button(self.game,text,button_x,button_y,action)
             self.buttons.append(button)
+            print(f"Added button: {text}")
 
 
 
@@ -442,14 +443,8 @@ def start_game():
 
         def interact(self):
         # Check if the player is near the NPC
-            print("Interact method called")
-            player = self.game.character
-            distance = math.sqrt((player.rect.centerx - self.rect.centerx)**2 + (player.rect.centery - self.rect.centery)**2)
-            print(f"distance to NPC:{distance}, Interaction threshold:{tilesize * 1.5}")
-            if distance < tilesize * 1.5:
-                print(f"Interaction triggered for {self.npc_type} NPC")
-                self.game.dialogue_active = True
-                print(f"Dialogue activated for {self.npc_type}NPC")
+            print(f"Interaction triggered for {self.npc_type} NPC")
+            self.game.dialogue_active = True
             self.game.box_x = (self.game.screen.get_width() - 600) // 2
             self.game.box_y = self.game.screen.get_height() - 150
 
@@ -461,25 +456,29 @@ def start_game():
             elif self.npc_type == "battle":
                 print(f"Creating battle dialogue for NPC {self.npc_id}")
                 if self.npc_id == 1:
-                    self.game.dialogue_box = DialogueBox(self.game, "You dare challenge me? Prepare yourself!", self.game.box_x, self.game.box_y)
+                    dialogue_text = "You dare challenge me? Prepare yourself!"
                 elif self.npc_id == 2:
-                    self.game.dialogue_box = DialogueBox(self.game, "Ready for a real challenge?", self.game.box_x, self.game.box_y)
+                    dialogue_text = "Ready for a real challenge?"
                 elif self.npc_id == 3:
-                    self.game.dialogue_box = DialogueBox(self.game, "You'll regret facing me!", self.game.box_x, self.game.box_y)
+                    dialogue_text = "You'll regret facing me!"
                 elif self.npc_id == 4:
-                    self.game.dialogue_box = DialogueBox(self.game, "This is going to be fun! ", self.game.box_x, self.game.box_y)
-                elif self.npc_id == 2:
-                    self.game.dialogue_box = DialogueBox(self.game, "Prepare for the ultimate battle!", self.game.box_x, self.game.box_y)
+                    dialogue_text = "This is going to be fun!"
+                elif self.npc_id == 5:
+                    dialogue_text = "Prepare for the ultimate battle!"
+                else:
+                    dialogue_text = "Are you ready to battle?"
 
-                    self.game.dialogue_box.add_button("Start Battle",self.start_battle)
-                    print(f"Added 'Start Battle' button for {self.npc_type}NPC")
-                
-                return True
-            return False
+                self.game.dialogue_box = DialogueBox(self.game, dialogue_text, self.game.box_x, self.game.box_y)
+                self.game.dialogue_box.add_button("Start Battle", self.start_battle)
+                print(f"Added 'Start Battle' button for {self.npc_type} NPC")
+            
+            return True
         
         def start_battle(self):
-            subprocess.call(['python', 'turn-based-combat.py'])
+            print("Starting battle...")
             self.game.close_dialogue()
+            self.game.start_battle(self.npc_id)
+            
 
 
 
@@ -613,6 +612,16 @@ def start_game():
                     if column == "W":
                         NPC(self,j,i,"battle",npc_id = 5)
                     
+        def start_battle(self, npc_id):
+            print(f"Starting battle with NPC {npc_id}")
+            self.playing = False  # Pause the main game loop
+            battle_process = subprocess.Popen(['python', 'turn-based-combat.py', str(npc_id)])
+            battle_process.wait()
+            self.update_after_battle()
+            self.playing = True
+
+        def update_after_battle(self):
+            print("Updating game state after battle")
 
         def new(self):
             self.playing = True
@@ -621,6 +630,10 @@ def start_game():
             self.npc = pygame.sprite.LayeredUpdates()
             self.player = self.character
             self.Tilemap()
+
+            for sprite in self.sprites:
+                if isinstance(sprite, NPC):
+                    self.npc.add(sprite)
 
         def show_shop(self):
             self.dialogue_active = False
@@ -645,26 +658,26 @@ def start_game():
                     if event.key == pygame.K_ESCAPE:
                         self.open_settings_menu()
 
-                elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_SPACE and not self.dialogue_active:
-                        print("Space key pressed,checking for nearby NPCs")
-                        for npc in self.npc:
-                            print(f"Checking NPC at position ({npc.rect.x}, {npc.rect.y})")
-                            if npc.interact():
-                                print("NPC interaction successful with {npc.npc_type} NPC")
-                                break
-                            else:
-                                print("No nearby NPCs found for interaction")
-                    elif event.key == pygame.K_ESCAPE:
-                        if self.dialogue_active:
-                            self.close_dialogue()
-                        else:
-                            self.playing = False
-                            self.running = False
+                    elif event.key == pygame.K_SPACE:
+                        print("Space key pressed, checking for nearby NPCs")
+                        self.check_npc_interaction()
                 if self.dialogue_active and self.dialogue_box:
                     print("Handling event for dialogue box")
                     self.dialogue_box.handle_event(event)
 
+
+        def check_npc_interaction(self):
+            player = self.character
+            for npc in self.npc:
+                distance = math.sqrt((player.rect.centerx - npc.rect.centerx)**2 + (player.rect.centery - npc.rect.centery)**2)
+                if distance < tilesize * 1.5:
+                    print(f"Interacting with NPC: {npc.npc_type}")
+                    npc.interact()
+                    self.dialogue_box = npc.game.dialogue_box
+                    break
+            else:
+                print("No nearby NPCs found for interaction")
+        
         def open_settings_menu(self):
             settings()         
 
@@ -683,8 +696,6 @@ def start_game():
             if self.dialogue_active and self.dialogue_box:
                 print("Drawing dialogue box: {self.dialogue_box.text}")
                 self.dialogue_box.draw(self.screen)
-            else:
-                print("Dialogue not active or dialogue box is None")
             self.clock.tick(FPS)
             pygame.display.update()
 
@@ -699,6 +710,8 @@ def start_game():
                 self.events()
                 self.update()
                 self.draw()
+                if not self.playing:  
+                    break
             if self.show_shop_flag:
                 self.run_shop()
 
