@@ -88,16 +88,17 @@ def settings():
                     changing_key = 'down'
 
         # Display current key bindings
+         # Display current key bindings
         draw_text(f"Left: {pygame.key.name(controls['left'])}", font, WHITE, 100, 100)
         draw_text(f"Right: {pygame.key.name(controls['right'])}", font, WHITE, 100, 180)
         draw_text(f"Up: {pygame.key.name(controls['up'])}", font, WHITE, 100, 260)
         draw_text(f"Down: {pygame.key.name(controls['down'])}", font, WHITE, 100, 340)
 
-        draw_button(left_button_rect, "Change Left")
-        draw_button(right_button_rect, "Change Right")  
-        draw_button(up_button_rect, "Change Up")
-        draw_button(down_button_rect, "Change Down")
-
+        # Check if the mouse is hovering over buttons and change their color
+        draw_button(left_button_rect, "Change Left", left_button_rect.collidepoint(mouse_pos))
+        draw_button(right_button_rect, "Change Right", right_button_rect.collidepoint(mouse_pos))
+        draw_button(up_button_rect, "Change Up", up_button_rect.collidepoint(mouse_pos))
+        draw_button(down_button_rect, "Change Down", down_button_rect.collidepoint(mouse_pos))
         pygame.display.update()
 
     # Save the updated controls
