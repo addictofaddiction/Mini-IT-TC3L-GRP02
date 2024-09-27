@@ -175,20 +175,6 @@ class Character(pygame.sprite.Sprite):
                 if self.animation_loop >= 3:
                     self.animation_loop =1
 
-        
-               
-
-
-
-
-
-    
-                           
-
-                    
-
-    
-
 
 class NPC(pygame.sprite.Sprite):
     def __init__(self,game,x,y):
