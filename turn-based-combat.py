@@ -103,6 +103,11 @@ class Fighter():
     def draw(self):
         screen.blit(self.image, self.rect)
 
+def win_lose_text(result):
+    if result == 'win':
+        draw_text('You Win!', font, green, screen_width // 2 - 100, screen_height // 2)
+    elif result == 'lose':
+        draw_text('You Lose!', font, red, screen_width // 2 - 100, screen_height // 2)
 
 
 class HealthBar():
@@ -163,10 +168,10 @@ potion_button = button.Button(screen,100, screen_height - bottom_panel + 70, pot
 
 
 run = True
-battle_over = False
+game_over = False
+result = None
 
 while run:
-    
     clock.tick(fps)
 
     #draw background
@@ -178,101 +183,100 @@ while run:
     bandit1_health_bar.draw(bandit1.hp)
     bandit2_health_bar.draw(bandit2.hp)
 
-    #draw fighters
-    player_creature.draw()
-    for bandit in bandit_list:
-        bandit.draw()
+    #check if game over
+    if game_over == False:
+        #draw fighters
+        player_creature.draw()
+        for bandit in bandit_list:
+            if bandit.alive:  # Hide bandit if not alive
+                bandit.draw()
 
-    #draw the damage text
-    damage_text_group.update()
-    damage_text_group.draw(screen)
+        #draw the damage text
+        damage_text_group.update()
+        damage_text_group.draw(screen)
 
-    #control player actions
-    #reset action variables
-    attack = False
-    potion = False
-    target = None
-    #this one here to make sure the mouse is visible
-    pygame.mouse.set_visible(True)
-    pos = pygame.mouse.get_pos()
-    for count, bandit in enumerate(bandit_list):
-        if bandit.rect.collidepoint(pos):
-            #im gonna hide the mouse
-            pygame.mouse.set_visible(False)
-            #show sword icon as mouse icon/cursor
-            screen.blit(sword_img, pos)
-            if clicked == True:
-                attack = True
-                target = bandit_list[count]
+        #control player actions
+        #reset action variables
+        attack = False
+        potion = False
+        target = None
+        #this one here to make sure the mouse is visible
+        pygame.mouse.set_visible(True)
+        pos = pygame.mouse.get_pos()
+        for count, bandit in enumerate(bandit_list):
+            if bandit.rect.collidepoint(pos) and bandit.alive:  # Only allow attacking alive enemies
+                pygame.mouse.set_visible(False)
+                screen.blit(sword_img, pos)
+                if clicked == True:
+                    attack = True
+                    target = bandit_list[count]
 
-    if potion_button.draw():
-        potion = True
-    # show number of potions remaining
-    draw_text(str(player_creature.potions), font, red, 150, screen_height - bottom_panel + 70)
+        if potion_button.draw():
+            potion = True
+        # show number of potions remaining
+        draw_text(str(player_creature.potions), font, red, 150, screen_height - bottom_panel + 70)
 
-
-    #player action
-    if player_creature.alive == True:
-        if current_fighter == 1:
-            action_cooldown += 1
-            if action_cooldown >= action_wait_time:
-                #look for player action
-                #attack
-                if attack == True and target != None:
-                   player_creature.attack(target)
-                   current_fighter += 1
-                   action_cooldown
-                #potion
-                if potion == True:
-                    if player_creature.potions > 0:
-                        #check if the potion would heal the player beyond max health
-                        if player_creature.max_hp - player_creature.hp > potion_effect:
-                            heal_amount = potion_effect
-                        else: 
-                            heal_amount = player_creature.max_hp - player_creature.hp
-                            player_creature.hp += heal_amount 
-                            player_creature.potions -= 1
-                            damage_text = DamageText(player_creature.rect.centerx, player_creature.rect.y, str(heal_amount), green)
-                            damage_text_group.add(damage_text)
-                            current_fighter += 1
-                            action_cooldown = 0
-                    
-
-
-
-    #enemy action
-    for count, bandit in enumerate(bandit_list):
-        if current_fighter == 2  + count:
-            if bandit.alive == True:
+        #player action
+        if player_creature.alive == True:
+            if current_fighter == 1:
                 action_cooldown += 1
                 if action_cooldown >= action_wait_time:
-                    #check if bandit needs to heal first
-                    if ( bandit.hp / bandit.max_hp) < 0.5 and bandit.potions > 0:
-                        #check if the potion would heal the player beyond max health
-                        if bandit.max_hp - bandit.hp > potion_effect:
-                            heal_amount = potion_effect
-                        else: 
-                            heal_amount = bandit.max_hp - bandit.hp
-                            bandit.hp += heal_amount 
+                    #look for player action
+                    if attack == True and target != None:
+                        player_creature.attack(target)
+                        current_fighter += 1
+                        action_cooldown = 0
+
+                    if potion == True and player_creature.potions > 0:
+                        heal_amount = min(potion_effect, player_creature.max_hp - player_creature.hp)
+                        player_creature.hp += heal_amount
+                        player_creature.hp = min(player_creature.hp, player_creature.max_hp)
+                        player_creature.potions -= 1
+                        damage_text = DamageText(player_creature.rect.centerx, player_creature.rect.y, str(heal_amount), green)
+                        damage_text_group.add(damage_text)
+                        current_fighter += 1
+                        action_cooldown = 0
+
+        #enemy action
+        for count, bandit in enumerate(bandit_list):
+            if current_fighter == 2 + count:
+                if bandit.alive == True:
+                    action_cooldown += 1
+                    if action_cooldown >= action_wait_time:
+                        #check if bandit needs to heal first
+                        if (bandit.hp / bandit.max_hp) < 0.5 and bandit.potions > 0:
+                            heal_amount = min(potion_effect, bandit.max_hp - bandit.hp)
+                            bandit.hp += heal_amount
+                            bandit.hp = min(bandit.hp, bandit.max_hp)
                             bandit.potions -= 1
                             damage_text = DamageText(bandit.rect.centerx, bandit.rect.y, str(heal_amount), green)
                             damage_text_group.add(damage_text)
                             current_fighter += 1
                             action_cooldown = 0
-                    else:                   
-                        #attack
-                        bandit.attack(player_creature)
-                        current_fighter += 1
-                        action_cooldown = 0
-            else:
-                current_fighter += 1
-                         
-    
-    #if all fighters have had a turn then reset
-    if current_fighter > total_fighters:
-        current_fighter = 1
+                        else:                   
+                            #attack
+                            bandit.attack(player_creature)
+                            current_fighter += 1
+                            action_cooldown = 0
+                else:
+                    current_fighter += 1
 
-      
+        #if all fighters have had a turn then reset
+        if current_fighter > total_fighters:
+            current_fighter = 1
+
+        #check if all enemies are defeated
+        if all(bandit.alive == False for bandit in bandit_list):
+            game_over = True
+            result = 'win'
+
+        #check if player is defeated
+        if player_creature.alive == False:
+            game_over = True
+            result = 'lose'
+    else:
+        # Draw win/lose message
+        win_lose_text(result)
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
@@ -285,6 +289,7 @@ while run:
     pygame.display.update()
 
 pygame.quit()
+
 sys.exit()
 
 
