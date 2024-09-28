@@ -8,8 +8,8 @@ class Button():
         self.rect.topleft = (x, y)
         self.clicked = False
         self.surface = surface
-        self.hovered = False  # Track hover state
-
+        self.hovered = False 
+        
     def draw(self, hover_effect=False):
         action = False
 

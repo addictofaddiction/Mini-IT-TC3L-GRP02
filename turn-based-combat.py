@@ -5,7 +5,7 @@ import button
 import json
 
 pygame.init()
-
+pygame.mixer.init()
 clock = pygame.time.Clock()
 fps = 60
 
@@ -63,15 +63,7 @@ def draw_panel():
         # Show name and health
         draw_text(f'{i.name} HP: {i.hp}', font, red, 550, (screen_height - bottom_panel + 10) + count * 60)
 
-
-def win_lose_text(result):
-    if result == 'win':
-        draw_text('You Win!', font, green, screen_width // 2 - 100, screen_height // 2)
-    elif result == 'lose':
-        draw_text('You Lose!', font, red, screen_width // 2 - 100, screen_height // 2)
-
-
-#fighter
+# Fighter class
 class Fighter():
     def __init__(self, x, y, name, max_hp, strength, potions):
         self.name = name
@@ -160,12 +152,16 @@ bandit2_health_bar = HealthBar(550, screen_height - bottom_panel + 100, bandit2.
 
 # Create buttons
 potion_button = button.Button(screen, 100, screen_height - bottom_panel + 70, potion_img, 64, 64)
+<<<<<<< Updated upstream
 
 # Main game loop
 run = True
 game_over = False
 result = None
+=======
+>>>>>>> Stashed changes
 
+# Main game loop
 run = True
 game_over = False
 result = None
