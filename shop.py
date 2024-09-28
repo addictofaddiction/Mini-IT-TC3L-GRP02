@@ -9,7 +9,7 @@ pygame.init()
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.RESIZABLE)  # Make the window resizable
 pygame.display.set_caption("Shop")
 
 WHITE = (255, 255, 255)
@@ -28,12 +28,12 @@ purchase1_rect = pygame.Rect((100, 500), (button_width, button_height))
 purchase2_rect = pygame.Rect((250, 500), (button_width, button_height))
 purchase3_rect = pygame.Rect((400, 500), (button_width, button_height))
 
-# Image positions 
+# Image positions
 image1_rect = pygame.Rect(purchase1_rect.x + (button_width - image_size[0]) // 2, purchase1_rect.y - image_size[1] - 10, *image_size)
 image2_rect = pygame.Rect(purchase2_rect.x + (button_width - image_size[0]) // 2, purchase2_rect.y - image_size[1] - 10, *image_size)
 image3_rect = pygame.Rect(purchase3_rect.x + (button_width - image_size[0]) // 2, purchase3_rect.y - image_size[1] - 10, *image_size)
 
-# Load images using relative paths(chatgpt)
+# Load images using relative paths
 item1_image = pygame.image.load(os.path.join('image', 'item01.png')).convert_alpha()
 item2_image = pygame.image.load(os.path.join('image', 'item02.png')).convert_alpha()
 item3_image = pygame.image.load(os.path.join('image', 'item03.png')).convert_alpha()
@@ -42,6 +42,9 @@ item3_image = pygame.image.load(os.path.join('image', 'item03.png')).convert_alp
 item1_image = pygame.transform.scale(item1_image, image_size)
 item2_image = pygame.transform.scale(item2_image, image_size)
 item3_image = pygame.transform.scale(item3_image, image_size)
+
+# Load background image
+background_image = pygame.image.load(os.path.join('image', 'shop.png')).convert_alpha()
 
 def draw_text(text, font, text_col, x, y):
     img = font.render(text, True, text_col)
@@ -58,34 +61,38 @@ def load_gold():
             return data.get("character_gold", 0)
     return 0
 
-#gold amount
+# Save gold amount
 def save_gold(gold):
     with open("character_gold.json", "w") as file:
         json.dump({"character_gold": gold}, file)
-
 
 # Main menu loop
 def run_shop(character):
     current_gold = character.gold
     shop_page = True
     while shop_page:
-        screen.fill((0, 0, 0))
+        # Get current screen size
+        SCREEN_WIDTH, SCREEN_HEIGHT = screen.get_size()
 
-    # Display current gold
+        # Scale the background image to fit the current window size
+        scaled_background = pygame.transform.scale(background_image, (SCREEN_WIDTH, SCREEN_HEIGHT))
+        screen.blit(scaled_background, (0, 0))  # Display the scaled background
+
+        # Display current gold
         gold_text = f"Gold: {current_gold}"
         draw_text(gold_text, gold_font, Yellow, 10, 10)
 
-    # Draw images above buttons
+        # Draw images above buttons
         screen.blit(item1_image, image1_rect.topleft)
         screen.blit(item2_image, image2_rect.topleft)
         screen.blit(item3_image, image3_rect.topleft)
 
-    # Draw buttons
+        # Draw buttons
         draw_button(purchase1_rect, "100$")
         draw_button(purchase2_rect, "200$")
         draw_button(purchase3_rect, "300$")
 
-    # Event handling
+        # Event handling
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 shop_page = False
@@ -95,7 +102,8 @@ def run_shop(character):
                 if event.key == pygame.K_ESCAPE:
                     shop_page = False
                     return current_gold
-            #purchasing 
+
+            # Purchasing
             if event.type == pygame.MOUSEBUTTONDOWN:
                 if purchase1_rect.collidepoint(event.pos):
                     if current_gold >= 100:
@@ -107,12 +115,12 @@ def run_shop(character):
                         current_gold -= 200
                         character.bag.add_item('super_potion')
                         
-                        
                 elif purchase3_rect.collidepoint(event.pos):
                     if current_gold >= 300:
                         current_gold -= 300
                         character.bag.add_item('ultimate_potion')
-                        
-            pygame.display.update()
+
+        pygame.display.update()
+
     character.gold = current_gold
     return current_gold

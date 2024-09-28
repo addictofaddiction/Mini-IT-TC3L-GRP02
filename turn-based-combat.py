@@ -251,7 +251,7 @@ while run:
                             action_cooldown = 0
                         else:
                             bandit.attack(player_creature)
-                            current_fighter += 1
+                            current_fighter += 1 
                             action_cooldown = 0
                 else:
                     current_fighter += 1

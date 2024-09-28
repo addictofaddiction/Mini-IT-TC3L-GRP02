@@ -11,7 +11,7 @@ def draw_button(screen, rect, text):
     pygame.draw.rect(screen, config.GRAY, rect)
     draw_text(screen, text, pygame.font.Font(None, 74), config.WHITE, rect.x + 20, rect.y + 5)
 
-def settings():
+def settings(screen):
     if os.path.isfile('controls.json'):
         with open('controls.json', 'r') as controls_file:
             controls = json.load(controls_file)
@@ -21,7 +21,7 @@ def settings():
 
     run_settings = True
     while run_settings:
-        config.screen.fill((0, 0, 0))
+        screen.fill((0, 0, 0))
 
         # Event handling
         for event in pygame.event.get():
@@ -45,21 +45,22 @@ def settings():
                     changing_key = 'down'
 
         # Display current key bindings
-        draw_text(config.screen, f"Left: {pygame.key.name(controls['left'])}", font, config.WHITE, 100, 100)
-        draw_text(config.screen, f"Right: {pygame.key.name(controls['right'])}", font, config.WHITE, 100, 180)
-        draw_text(config.screen, f"Up: {pygame.key.name(controls['up'])}", font, config.WHITE, 100, 260)
-        draw_text(config.screen, f"Down: {pygame.key.name(controls['down'])}", font, config.WHITE, 100, 340)
+        draw_text(screen, f"Left: {pygame.key.name(controls['left'])}", font, config.WHITE, 100, 100)
+        draw_text(screen, f"Right: {pygame.key.name(controls['right'])}", font, config.WHITE, 100, 180)
+        draw_text(screen, f"Up: {pygame.key.name(controls['up'])}", font, config.WHITE, 100, 260)
+        draw_text(screen, f"Down: {pygame.key.name(controls['down'])}", font, config.WHITE, 100, 340)
 
-        draw_button(config.screen, config.left_button_rect, "Change Left")
-        draw_button(config.screen, config.right_button_rect, "Change Right")  
-        draw_button(config.screen, config.up_button_rect, "Change Up")
-        draw_button(config.screen, config.down_button_rect, "Change Down")
+        draw_button(screen, config.left_button_rect, "Change Left")
+        draw_button(screen, config.right_button_rect, "Change Right")  
+        draw_button(screen, config.up_button_rect, "Change Up")
+        draw_button(screen, config.down_button_rect, "Change Down")
 
         pygame.display.update()
 
     # Save the updated controls
     with open('controls.json', 'w') as controls_file:
         json.dump(controls, controls_file)
+
 
 class DialogueBox:
     def __init__(self, game, text, x, y):

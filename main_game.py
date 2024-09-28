@@ -261,6 +261,8 @@ def start_game():
             for item in hits:
                 self.gold += 100
                 self.game.current_gold += 100
+                with open('character_gold.json', "w") as character_gold_file:
+                    json.dump(self.game.current_gold, character_gold_file)
 
 
         def update(self):
@@ -608,8 +610,10 @@ def start_game():
             self.character = None
             self.npc = pygame.sprite.Group()
             self.show_shop_flag = False
-            self.current_gold = 0
-        
+            
+            with open('character_gold.json', "r") as character_gold_file:
+                character_gold= character_gold_file
+            self.current_gold = character_gold
         
             self.coin_spritesheet = Spritesheet('image/coins.png')
             self.coins = pygame.sprite.Group()
