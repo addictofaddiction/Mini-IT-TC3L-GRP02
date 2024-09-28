@@ -4,6 +4,7 @@ import os
 from game import Game
 from ui import draw_button, draw_text, settings
 from config import *
+import json
 
 pygame.mixer.init()
 pygame.mixer.music.load('audio/bg_music.mp3')
@@ -38,13 +39,21 @@ def start_game():
 run = True
 while run:
     screen.fill((0, 0, 0))
-    search_file_existance = os.path.isfile("character_gold.json")
+    starting_gold = {
+    "character_gold":300  
+    }
+    
+    search_file_existance = os.path.isfile("character_gold.json") 
 
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
         if event.type == pygame.MOUSEBUTTONDOWN:
             if start_button_rect.collidepoint(event.pos):
+                with open('character_gold.json', "w") as character_gold_file:
+                    json.dump(starting_gold, character_gold_file)
+                with open('controls.json', 'w') as controls_file:
+                    json.dump(default_controls, controls_file)
                 start_game()
                 run = False
             if search_file_existance and continue_button_rect.collidepoint(event.pos):  

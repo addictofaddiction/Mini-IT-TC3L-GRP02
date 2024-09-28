@@ -9,7 +9,7 @@ pygame.init()
 SCREEN_WIDTH = 800
 SCREEN_HEIGHT = 600
 
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.RESIZABLE)  # Make the window resizable
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), pygame.RESIZABLE)  
 pygame.display.set_caption("Shop")
 
 WHITE = (255, 255, 255)
@@ -59,7 +59,6 @@ def load_gold():
         with open("character_gold.json", "r") as current_gold_file:
             data = json.load(current_gold_file)
             return data.get("character_gold", 0)
-    return 0
 
 # Save gold amount
 def save_gold(gold):

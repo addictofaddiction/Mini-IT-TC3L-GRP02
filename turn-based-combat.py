@@ -234,10 +234,13 @@ while run:
         if all(bandit.alive == False for bandit in bandit_list):
             game_over = True
             result = 'win'
+            sys.exit()
 
         if player_creature.alive == False:
             game_over = True
             result = 'lose'
+            sys.exit()
+            
     else:
         win_lose_text(result)
 

@@ -141,8 +141,9 @@ class Game:
             self.show_shop_flag = True
             result = run_shop(self.character)
             if result is not None:
-                self.current_gold = result
-                self.character.gold = result
+                with open('character_gold.json', "r") as character_gold_file:
+                    self.current_gold = character_gold_file
+                self.character.gold = character_gold_file
             self.show_shop_flag = False
 
         
@@ -165,6 +166,8 @@ class Game:
             for sprite in self.sprites:
                 self.screen.blit(sprite.image, sprite.rect)
 
+            with open('character_gold.json', "r") as character_gold_file:
+                    self.current_gold = character_gold_file
             font = pygame.font.Font(None, 36)
             gold_text = font.render(f"Gold: {self.character.gold}", True, (255, 255, 0))
             self.screen.blit(gold_text, (10, 10))
@@ -173,9 +176,6 @@ class Game:
             bag_font = pygame.font.Font(None, 24)
             bag_text = bag_font.render("Bag", True, (0, 0, 0))
             self.screen.blit(bag_text, (self.bag_button.x + 5, self.bag_button.y + 5))
-
-            if self.show_bag:
-                self.draw_bag()
 
             if self.dialogue_active and self.dialogue_box:
                 print("Drawing dialogue box: {self.dialogue_box.text}")
