@@ -1,4 +1,7 @@
-player_layer = 3
+
+
+player_layer = 4
+item_layer = 3
 block_layer = 2
 ground_layer = 1
 
@@ -15,30 +18,32 @@ SCREEN_HEIGHT = 600
 tilesize = 32
 tilemap = [
     'llllllllllllllllllllllllllllll',
-    'bbbb.....................bbbbb',
-    'bbbbN....................bbbbb',
     'bbbbb....................bbbbb',
-    'B..........................lll',
+    'bbbbN.........G..........Pbbbb',
+    'bbbbb....................bbbbb',
+    'BW.........................lll',
     '.B.........................lll',
     'B............C.............lll',
     '.B.........................lBl',
-    'B............................l',
-    '.B.........nlll.............Bl',
     'B..........llll..............l',
-    '.B.........llll.............Bl',
+    '.B.........nlll............OBl',
     'B..........llll..............l',
+    '.B.G.......llll.............Bl',
+    'B..........llll............G.l',
     '.B..........................Bl',
     'B............................l',
-    '.B..........................ll',
-    'B........................bbbbb',
-    '.B........................bbbb',
-    'B.........................bbbb',
-    '.Blllllllllllllllllllbbbbbbbbb',
-    
-]
+    '.B.........................pll',
+    'B.S......................bbbbb',
+    '.B.......................wbbbb',
+    'B........................Bbbbb',
+    '.Blllllllllllllllllllllll.bbbb',]
 FPS = 30
 
 starting_gold = {
     "character_gold":300  
     }
 
+BUTTON_WIDTH = 300
+BUTTON_HEIGHT = 50
+BUTTON_SPACING = 20
+BUTTON_WIDTH_FOR_KEYBIND = 400
