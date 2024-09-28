@@ -193,7 +193,23 @@ class Game:
                 bag_surface.blit(text, (10, 10 + i * 30))
             self.screen.blit(bag_surface, (960 // 2 - 150, 640 // 2 - 200))
 
+        def save_game(character):
+            save_data = {
+                "x": character.rect.x,
+                "y": character.rect.y,
+                "gold": character.gold
+            }
+            with open("save_file.json", "w") as f:
+                json.dump(save_data, f)
 
+        def load_game(character):
+            if os.path.isfile("save_file.json"):
+                with open("save_file.json", "r") as f:
+                    save_data = json.load(f)
+                    character.rect.x = save_data.get("x", 0)
+                    character.rect.y = save_data.get("y", 0)
+                    character.gold = save_data.get("gold", 0)
+                    
         def main(self):
             self.playing = True
             while self.playing:
