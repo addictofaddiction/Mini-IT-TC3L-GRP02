@@ -109,6 +109,11 @@ class Fighter():
     def draw(self):
         screen.blit(self.image, self.rect)
 
+def win_lose_text(result):
+    if result == 'win':
+        draw_text('You Win!', font, green, screen_width // 2 - 100, screen_height // 2)
+    elif result == 'lose':
+        draw_text('You Lose!', font, red, screen_width // 2 - 100, screen_height // 2)
 
 
 class HealthBar():
@@ -169,7 +174,8 @@ potion_button = button.Button(screen,100, screen_height - bottom_panel + 70, pot
 
 
 run = True
-battle_over = False
+game_over = False
+result = None
 
 run = True
 game_over = False
@@ -293,6 +299,7 @@ while run:
     pygame.display.update()
 
 pygame.quit()
+
 sys.exit()
 
 
