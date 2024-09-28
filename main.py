@@ -6,7 +6,7 @@ from ui import draw_button, draw_text, settings
 from config import *
 
 pygame.mixer.init()
-pygame.mixer.music.load('bg_music.mp3')
+pygame.mixer.music.load('audio/bg_music.mp3')
 pygame.mixer.music.play(-1)
 
 default_controls = {

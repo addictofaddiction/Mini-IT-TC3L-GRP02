@@ -81,8 +81,11 @@ class Game:
             self.update_after_battle()
             self.playing = True
 
+
+
         def update_after_battle(self):
             print("Updating game state after battle")
+        
 
         def new(self):
             self.playing = True
