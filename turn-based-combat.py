@@ -17,6 +17,33 @@ screen_height = 400 + bottom_panel
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption('Battle')
 
+# Load character stats
+def load_character_stats():
+    if os.path.exists("character_stats.json"):
+        with open("character_stats.json", "r") as stats_file:
+            return json.load(stats_file)
+    else:
+        return {
+            "base_damage": 10,
+            "max_hp": 30,
+            "current_hp": 30,
+            "potion_effectiveness": 1.0,
+            "potions": 3
+        }
+
+def load_gold():
+    if os.path.exists("character_gold.json"):
+        with open("character_gold.json", "r") as gold_file:
+            return json.load(gold_file).get("character_gold", 0)
+    return 0
+
+def save_gold(gold):
+    with open("character_gold.json", "w") as gold_file:
+        json.dump({"character_gold": gold}, gold_file)
+
+character_stats = load_character_stats()
+character_gold = load_gold()
+
 # Define game variables
 current_fighter = 1
 total_fighters = 3
@@ -24,7 +51,6 @@ action_cooldown = 0
 action_wait_time = 90
 attack = False
 potion = False
-potion_effect = 20
 clicked = False  # Will look for a mouse click
 
 # Define fonts
@@ -63,15 +89,18 @@ def draw_panel():
         # Show name and health
         draw_text(f'{i.name} HP: {i.hp}', font, red, 550, (screen_height - bottom_panel + 10) + count * 60)
 
-
 def win_lose_text(result):
+    global character_gold
     if result == 'win':
         draw_text('You Win!', font, green, screen_width // 2 - 100, screen_height // 2)
+        character_gold += 300  # Add 300 gold for winning
     elif result == 'lose':
         draw_text('You Lose!', font, red, screen_width // 2 - 100, screen_height // 2)
+        character_gold += 50  # Add 50 gold for losing
 
+    save_gold(character_gold)  # Save the updated gold amount
 
-#fighter
+# Fighter class
 class Fighter():
     def __init__(self, x, y, name, max_hp, strength, potions):
         self.name = name
@@ -101,12 +130,6 @@ class Fighter():
     def draw(self):
         if self.alive:  # Only draw if the fighter is alive
             screen.blit(self.image, self.rect)
-
-def win_lose_text(result):
-    if result == 'win':
-        draw_text('You Win!', font, green, screen_width // 2 - 100, screen_height // 2)
-    elif result == 'lose':
-        draw_text('You Lose!', font, red, screen_width // 2 - 100, screen_height // 2)
 
 # HealthBar class
 class HealthBar():
@@ -144,14 +167,12 @@ class DamageText(pygame.sprite.Sprite):
 # Create sprite group for damage text
 damage_text_group = pygame.sprite.Group()
 
-# Create fighters
-player_creature = Fighter(200, 260, 'player_creature', 30, 10, 3)
+# Create fighters using character stats
+player_creature = Fighter(200, 260, 'player_creature', character_stats['max_hp'], character_stats['base_damage'], character_stats['potions'])
 bandit1 = Fighter(550, 270, 'Bandit', 20, 6, 1)
 bandit2 = Fighter(700, 270, 'Bandit', 20, 6, 1)
 
-bandit_list = []
-bandit_list.append(bandit1)
-bandit_list.append(bandit2)
+bandit_list = [bandit1, bandit2]
 
 # Create health bars
 player_creature_health_bar = HealthBar(100, screen_height - bottom_panel + 40, player_creature.hp, player_creature.max_hp)
@@ -162,10 +183,6 @@ bandit2_health_bar = HealthBar(550, screen_height - bottom_panel + 100, bandit2.
 potion_button = button.Button(screen, 100, screen_height - bottom_panel + 70, potion_img, 64, 64)
 
 # Main game loop
-run = True
-game_over = False
-result = None
-
 run = True
 game_over = False
 result = None
@@ -225,6 +242,7 @@ while run:
                         action_cooldown = 0
 
                     if potion and player_creature.potions > 0:
+                        potion_effect = int(20 * character_stats['potion_effectiveness'])  # Adjust potion effectiveness
                         heal_amount = min(potion_effect, player_creature.max_hp - player_creature.hp)
                         player_creature.hp += heal_amount
                         player_creature.hp = min(player_creature.hp, player_creature.max_hp)
@@ -270,7 +288,7 @@ while run:
             game_over = True
             result = 'lose'
     else:
-        # Draw win/lose message
+        # Draw win/lose message and update gold
         win_lose_text(result)
 
     # Event handling
