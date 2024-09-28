@@ -122,21 +122,19 @@ class Game:
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     if self.bag_button.collidepoint(event.pos):
                         self.show_bag = not self.show_bag
-                if event.type == pygame.KEYDOWN:
+                if event.type == pygame.KEYDOWN:  # Only handle key events here
                     if event.key == pygame.K_ESCAPE:
                         if self.show_bag:
                             self.show_bag = False
                         else:
                             self.open_settings_menu()
-
-                    
-
                     elif event.key == pygame.K_SPACE:
                         print("Space key pressed, checking for nearby NPCs")
                         self.check_npc_interaction()
                 if self.dialogue_active and self.dialogue_box:
                     print("Handling event for dialogue box")
                     self.dialogue_box.handle_event(event)
+
 
         def show_shop(self):
             self.dialogue_active = False
@@ -155,7 +153,7 @@ class Game:
 
         
         def open_settings_menu(self):
-            settings()         
+            settings(self.screen)         
 
         
 
