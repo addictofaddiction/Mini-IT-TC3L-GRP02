@@ -34,9 +34,9 @@ image2_rect = pygame.Rect(purchase2_rect.x + (button_width - image_size[0]) // 2
 image3_rect = pygame.Rect(purchase3_rect.x + (button_width - image_size[0]) // 2, purchase3_rect.y - image_size[1] - 10, *image_size)
 
 # Load images using relative paths(chatgpt)
-item1_image = pygame.image.load(os.path.join('image', 'item1.png')).convert_alpha()
-item2_image = pygame.image.load(os.path.join('image', 'item2.png')).convert_alpha()
-item3_image = pygame.image.load(os.path.join('image', 'item3.png')).convert_alpha()
+item1_image = pygame.image.load(os.path.join('image', 'item01.png')).convert_alpha()
+item2_image = pygame.image.load(os.path.join('image', 'item02.png')).convert_alpha()
+item3_image = pygame.image.load(os.path.join('image', 'item03.png')).convert_alpha()
 
 # Scale images to fit the defined size
 item1_image = pygame.transform.scale(item1_image, image_size)
@@ -100,18 +100,18 @@ def run_shop(character):
                 if purchase1_rect.collidepoint(event.pos):
                     if current_gold >= 100:
                         current_gold -= 100
-                        character.bag.add_item('item_1')
+                        character.bag.add_item('potion')
                         
                 elif purchase2_rect.collidepoint(event.pos):
                     if current_gold >= 200:
                         current_gold -= 200
-                        character.bag.add_item('item_2')
+                        character.bag.add_item('super_potion')
                         
                         
                 elif purchase3_rect.collidepoint(event.pos):
                     if current_gold >= 300:
                         current_gold -= 300
-                        character.bag.add_item('item_3')
+                        character.bag.add_item('ultimate_potion')
                         
             pygame.display.update()
     character.gold = current_gold
