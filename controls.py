@@ -64,10 +64,10 @@ def settings():
                     changing_key = 'down'
 
         # Draw the current controls and buttons
-        draw_text(f"Left: {pygame.key.name(controls['left'])}", font, WHITE, 100, 100)
-        draw_text(f"Right: {pygame.key.name(controls['right'])}", font, WHITE, 100, 150)
-        draw_text(f"Up: {pygame.key.name(controls['up'])}", font, WHITE, 100, 200)
-        draw_text(f"Down: {pygame.key.name(controls['down'])}", font, WHITE, 100, 250)
+        draw_text(f"Left: {pygame.key.name(controls['left'])}", font, WHITE, 150, 100)
+        draw_text(f"Right: {pygame.key.name(controls['right'])}", font, WHITE, 150, 150)
+        draw_text(f"Up: {pygame.key.name(controls['up'])}", font, WHITE, 150, 200)
+        draw_text(f"Down: {pygame.key.name(controls['down'])}", font, WHITE, 150, 250)
 
         draw_button(left_button_rect, "Change Left")
         draw_button(right_button_rect, "Change Right")  

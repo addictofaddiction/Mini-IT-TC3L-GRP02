@@ -45,10 +45,10 @@ def settings(screen):
                     changing_key = 'down'
 
         # Display current key bindings
-        draw_text(screen, f"Left: {pygame.key.name(controls['left'])}", font, config.WHITE, 100, 100)
-        draw_text(screen, f"Right: {pygame.key.name(controls['right'])}", font, config.WHITE, 100, 180)
-        draw_text(screen, f"Up: {pygame.key.name(controls['up'])}", font, config.WHITE, 100, 260)
-        draw_text(screen, f"Down: {pygame.key.name(controls['down'])}", font, config.WHITE, 100, 340)
+        draw_text(screen, f"Left: {pygame.key.name(controls['left'])}", font, config.WHITE, 50, 100)
+        draw_text(screen, f"Right: {pygame.key.name(controls['right'])}", font, config.WHITE, 50, 180)
+        draw_text(screen, f"Up: {pygame.key.name(controls['up'])}", font, config.WHITE, 50, 260)
+        draw_text(screen, f"Down: {pygame.key.name(controls['down'])}", font, config.WHITE, 50, 340)
 
         draw_button(screen, config.left_button_rect, "Change Left")
         draw_button(screen, config.right_button_rect, "Change Right")  
