@@ -1,5 +1,6 @@
 import pygame
 import random
+import sys
 import button
 
 pygame.init()
@@ -162,6 +163,7 @@ potion_button = button.Button(screen,100, screen_height - bottom_panel + 70, pot
 
 
 run = True
+battle_over = False
 
 while run:
     
@@ -283,6 +285,8 @@ while run:
     pygame.display.update()
 
 pygame.quit()
+sys.exit()
+
 
 
   
