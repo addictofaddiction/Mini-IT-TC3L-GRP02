@@ -152,14 +152,12 @@ bandit2_health_bar = HealthBar(550, screen_height - bottom_panel + 100, bandit2.
 
 # Create buttons
 potion_button = button.Button(screen, 100, screen_height - bottom_panel + 70, potion_img, 64, 64)
-<<<<<<< Updated upstream
+
 
 # Main game loop
 run = True
 game_over = False
 result = None
-=======
->>>>>>> Stashed changes
 
 # Main game loop
 run = True
