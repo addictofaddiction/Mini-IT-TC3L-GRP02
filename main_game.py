@@ -112,9 +112,11 @@ def settings():
 
 
 
+
 def start_game():
 
-    player_layer = 3
+    player_layer = 4
+    item_layer = 3
     block_layer = 2
     ground_layer = 1
 
@@ -129,28 +131,27 @@ def start_game():
     SCREEN_HEIGHT = 600
 
     tilesize = 32
-    tilemap = [
+    tilemap =  [
         'llllllllllllllllllllllllllllll',
-        'bbbb.....................bbbbb',
-        'bbbbN....................bbbbb',
         'bbbbb....................bbbbb',
-        'B..........................lll',
+        'bbbbN.........G..........Pbbbb',
+        'bbbbb....................bbbbb',
+        'BW.........................lll',
         '.B.........................lll',
         'B............C.............lll',
         '.B.........................lBl',
-        'B............................l',
-        '.B.........nlll.............Bl',
-        'B..........llll............P.l',
-        '.B.........llll.............Bl',
         'B..........llll..............l',
+        '.B.........nlll.............Bl',
+        'B..........llll..............l',
+        '.B.G.......llll.............Bl',
+        'B..........llll............G.l',
         '.B..........................Bl',
-        'B..........................p.l',
-        '.B..........................ll',
-        'B.W......................bbbbb',
+        'B............................l',
+        '.B.........................pll',
+        'B........................bbbbb',
         '.B.......................wbbbb',
-        'B.........................bbbb',
-        '.Blllllllllllllllllllbbbbbbbbb',
-        
+        'B........................Bbbbb',
+        '.Blllllllllllllllllllllll.bbbb',
     ]
     FPS = 30
 
@@ -168,6 +169,39 @@ def start_game():
             sprite.set_colorkey((0,0,0))
 
             return sprite
+        
+    class Item(pygame.sprite.Sprite):
+        def __init__(self, game, x, y, item):
+            self._layer = item_layer
+            self.groups = game.sprites, game.coins
+            pygame.sprite.Sprite.__init__(self, self.groups)
+            self.game = game
+            self.item = item
+            self.x = x * tilesize
+            self.y = y * tilesize
+            self.width = tilesize
+            self.height = tilesize
+
+            self.image = self.game.coin_spritesheet.get_sprite(174, 170, self.width * 1.25, self.height)
+            
+            
+
+            self.rect = self.image.get_rect()
+            self.rect.x = self.x
+            self.rect.y = self.y
+
+    class Bag:
+        def __init__(self):
+            self.items = []
+
+        def add_item(self, item):
+            self.items.append(item)
+
+        def use_item(self, item_index):
+            if 0 <= item_index < len(self.items):
+                item = self.items.pop(item_index)
+                return item
+            return None
             
     class Character(pygame.sprite.Sprite):
         def __init__(self,game,x,y):
@@ -175,6 +209,8 @@ def start_game():
             self._layer = player_layer
             self.groups = self.game.sprites
             pygame.sprite.Sprite.__init__(self,self.groups) 
+            self.bag = Bag()
+            self.gold = 0
 
 
             #pull controls folder
@@ -220,6 +256,13 @@ def start_game():
                     with open('save_file.json', 'w') as default_location:
                         json.dump(start_spawn_default,default_location)
 
+        def collect_items(self):
+            hits = pygame.sprite.spritecollide(self, self.game.coins, True)
+            for item in hits:
+                self.gold += 100
+                self.game.current_gold += 100
+
+
         def update(self):
             self.movement()
             self.animate()
@@ -229,6 +272,9 @@ def start_game():
             self.collide('y')
             self.x_change = 0
             self.y_change = 0
+            self.collect_items()
+
+        
         
         #key binds
         def movement(self):
@@ -317,26 +363,7 @@ def start_game():
                     if self.animation_loop >= 3:
                         self.animation_loop =1
 
-    class Camera:
-        def __init__(self, width, height):
-            self.camera = pygame.Rect(0, 0, width, height)
-            self.width = width
-            self.height = height
-
-        def apply(self, entity):
-            return entity.rect.move(self.camera.topleft)
-
-        def update(self, target):
-            x = -target.rect.centerx + int(self.width / 2)
-            y = -target.rect.centery + int(self.height / 2)
-
-            # Limit scrolling to game boundaries
-            x = min(0, x)  # left
-            y = min(0, y)  # top
-            x = max(-(self.camera.width - self.width), x)  # right
-            y = max(-(self.camera.height - self.height), y)  # bottom
-
-            self.camera = pygame.Rect(x, y, self.camera.width, self.camera.height)
+    
 
     
 
@@ -352,6 +379,7 @@ def start_game():
             self.text = text
             self.active = True
             self.buttons = []
+            
             
         def add_button(self, text, action):
             button_x = self.box_x + (len(self.buttons) * 150) + 50
@@ -581,8 +609,12 @@ def start_game():
             self.npc = pygame.sprite.Group()
             self.show_shop_flag = False
             self.current_gold = 0
-            self.camera = Camera(960,640)
         
+        
+            self.coin_spritesheet = Spritesheet('image/coins.png')
+            self.coins = pygame.sprite.Group()
+            self.bag_button = pygame.Rect(960 - 60, 10, 80, 30)
+            self.show_bag = False
             
         def Tilemap(self):
             for i,row in enumerate(tilemap):
@@ -611,6 +643,8 @@ def start_game():
                         NPC(self,j,i,"battle",npc_id = 4)
                     if column == "W":
                         NPC(self,j,i,"battle",npc_id = 5)
+                    if column == "G":
+                        Item(self, j, i, 'gold')
                     
         def start_battle(self, npc_id):
             print(f"Starting battle with NPC {npc_id}")
@@ -628,43 +662,13 @@ def start_game():
             self.sprites = pygame.sprite.LayeredUpdates()
             self.blocks = pygame.sprite.LayeredUpdates()
             self.npc = pygame.sprite.LayeredUpdates()
+            self.coins = pygame.sprite.LayeredUpdates()
             self.player = self.character
             self.Tilemap()
 
             for sprite in self.sprites:
                 if isinstance(sprite, NPC):
                     self.npc.add(sprite)
-
-        def show_shop(self):
-            self.dialogue_active = False
-            self.show_shop_flag = True
-            result = run_shop()
-            if result is not None:
-                self.current_gold = result
-            self.show_shop_flag = False
-
-        
-        def close_dialogue(self):
-            self.dialogue_active = False
-            self.dialogue_box = None
-
-        def events(self):
-            for event in pygame.event.get():
-                if event.type == pygame.QUIT:
-                    self.character.save_position()  # Save position when quitting
-                    self.playing = False
-                    self.running = False
-                elif event.type == pygame.KEYDOWN:
-                    if event.key == pygame.K_ESCAPE:
-                        self.open_settings_menu()
-
-                    elif event.key == pygame.K_SPACE:
-                        print("Space key pressed, checking for nearby NPCs")
-                        self.check_npc_interaction()
-                if self.dialogue_active and self.dialogue_box:
-                    print("Handling event for dialogue box")
-                    self.dialogue_box.handle_event(event)
-
 
         def check_npc_interaction(self):
             player = self.character
@@ -673,10 +677,51 @@ def start_game():
                 if distance < tilesize * 1.5:
                     print(f"Interacting with NPC: {npc.npc_type}")
                     npc.interact()
-                    self.dialogue_box = npc.game.dialogue_box
+                
                     break
             else:
                 print("No nearby NPCs found for interaction")
+
+        def events(self):
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    self.character.save_position()  # Save position when quitting
+                    self.playing = False
+                    self.running = False
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    if self.bag_button.collidepoint(event.pos):
+                        self.show_bag = not self.show_bag
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_ESCAPE:
+                        if self.show_bag:
+                            self.show_bag = False
+                        else:
+                            self.open_settings_menu()
+
+                    
+
+                    elif event.key == pygame.K_SPACE:
+                        print("Space key pressed, checking for nearby NPCs")
+                        self.check_npc_interaction()
+                if self.dialogue_active and self.dialogue_box:
+                    print("Handling event for dialogue box")
+                    self.dialogue_box.handle_event(event)
+
+        def show_shop(self):
+            self.dialogue_active = False
+            self.show_shop_flag = True
+            result = run_shop(self.character)
+            if result is not None:
+                self.current_gold = result
+                self.character.gold = result
+            self.show_shop_flag = False
+
+        
+        def close_dialogue(self):
+            self.dialogue_active = False
+            self.dialogue_box = None
+
+
         
         def open_settings_menu(self):
             settings()         
@@ -685,20 +730,39 @@ def start_game():
 
         def update(self):
             self.sprites.update()
-            if self.player:
-                self.camera.update(self.player)
 
         def draw(self):
             self.screen.fill(black)
             for sprite in self.sprites:
-                self.screen.blit(sprite.image, self.camera.apply(sprite))
+                self.screen.blit(sprite.image, sprite.rect)
+
+            font = pygame.font.Font(None, 36)
+            gold_text = font.render(f"Gold: {self.character.gold}", True, (255, 255, 0))
+            self.screen.blit(gold_text, (10, 10))
+
+            pygame.draw.rect(self.screen, (200, 200, 200), self.bag_button)
+            bag_font = pygame.font.Font(None, 24)
+            bag_text = bag_font.render("Bag", True, (0, 0, 0))
+            self.screen.blit(bag_text, (self.bag_button.x + 5, self.bag_button.y + 5))
+
+            if self.show_bag:
+                self.draw_bag()
 
             if self.dialogue_active and self.dialogue_box:
                 print("Drawing dialogue box: {self.dialogue_box.text}")
                 self.dialogue_box.draw(self.screen)
+        
             self.clock.tick(FPS)
             pygame.display.update()
 
+        def draw_bag(self):
+            bag_surface = pygame.Surface((300, 400))
+            bag_surface.fill((200, 200, 200))
+            font = pygame.font.Font(None, 24)
+            for i, item in enumerate(self.character.bag.items):
+                text = font.render(item, True, black)
+                bag_surface.blit(text, (10, 10 + i * 30))
+            self.screen.blit(bag_surface, (960 // 2 - 150, 640 // 2 - 200))
 
 
         def main(self):
@@ -758,6 +822,8 @@ while run:
     draw_button(quit_button_rect, "Quit")
 
     pygame.display.update()
+
+
 
 
 

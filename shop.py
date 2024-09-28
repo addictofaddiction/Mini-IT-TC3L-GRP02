@@ -66,8 +66,8 @@ def save_gold(gold):
 
 
 # Main menu loop
-def run_shop():
-    current_gold = load_gold()
+def run_shop(character):
+    current_gold = character.gold
     shop_page = True
     while shop_page:
         screen.fill((0, 0, 0))
@@ -101,23 +101,21 @@ def run_shop():
                 if purchase1_rect.collidepoint(event.pos):
                     if current_gold >= 100:
                         current_gold -= 100
-                        save_gold(current_gold)
+                        character.bag.add_item('item_1')
                         
-                        with open("character_gold.json", "w") as file:
-                            json.dump({"character_gold": current_gold}, file)
                 elif purchase2_rect.collidepoint(event.pos):
                     if current_gold >= 200:
                         current_gold -= 200
-                        save_gold(current_gold)
+                        character.bag.add_item('item_2')
                         
-                        with open("character_gold.json", "w") as file:
-                            json.dump({"character_gold": current_gold}, file)
+                        
                 elif purchase3_rect.collidepoint(event.pos):
                     if current_gold >= 300:
                         current_gold -= 300
-                        save_gold(current_gold)
+                        character.bag.add_item('item_3')
                         
                         
 
             pygame.display.update()
+    character.gold = current_gold
     return current_gold
