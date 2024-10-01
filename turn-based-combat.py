@@ -3,9 +3,10 @@ import random
 import sys
 import button
 import json
+import os
 
 pygame.init()
-pygame.mixer.init()
+
 clock = pygame.time.Clock()
 fps = 60
 
@@ -17,6 +18,33 @@ screen_height = 400 + bottom_panel
 screen = pygame.display.set_mode((screen_width, screen_height))
 pygame.display.set_caption('Battle')
 
+# Load character stats
+def load_character_stats():
+    if os.path.exists("character_stats.json"):
+        with open("character_stats.json", "r") as stats_file:
+            return json.load(stats_file)
+    else:
+        return {
+            "base_damage": 10,
+            "max_hp": 30,
+            "current_hp": 30,
+            "potion_effectiveness": 1.0,
+            "potions": 3
+        }
+
+def load_gold():
+    if os.path.exists("character_gold.json"):
+        with open("character_gold.json", "r") as gold_file:
+            return json.load(gold_file).get("character_gold", 0)
+    return 0
+
+def save_gold(gold):
+    with open("character_gold.json", "w") as gold_file:
+        json.dump({"character_gold": gold}, gold_file)
+
+character_stats = load_character_stats()
+character_gold = load_gold()
+
 # Define game variables
 current_fighter = 1
 total_fighters = 3
@@ -24,12 +52,7 @@ action_cooldown = 0
 action_wait_time = 90
 attack = False
 potion = False
-potion_effect = 20
 clicked = False  # Will look for a mouse click
-
-# Difficulty settings
-difficulty_level = 2  # Change this to increase difficulty
-damage_multiplier = 1 + 0.25 * (difficulty_level - 1)  # Adds 25% damage per difficulty level
 
 # Define fonts
 font = pygame.font.SysFont('Times New Roman', 26)
@@ -39,9 +62,13 @@ red = (255, 0, 0)
 green = (0, 255, 0)
 
 # Load images
+# Background image
 background_img = pygame.image.load('img/Background/background.png').convert_alpha()
+# Panel image
 panel_img = pygame.image.load('img/Icons/panel.png').convert_alpha()
+# Button images
 potion_img = pygame.image.load('img/Icons/potion.png').convert_alpha()
+# Sword image
 sword_img = pygame.image.load('img/Icons/sword.png').convert_alpha()
 
 # Create function for drawing text
@@ -55,10 +82,24 @@ def draw_bg():
 
 # Function for drawing panel
 def draw_panel():
+    # Draw panel rectangle
     screen.blit(panel_img, (0, screen_height - bottom_panel))
+    # Show player's creature's stats
     draw_text(f'{player_creature.name} HP: {player_creature.hp}', font, red, 100, screen_height - bottom_panel + 10)
     for count, i in enumerate(bandit_list):
+        # Show name and health
         draw_text(f'{i.name} HP: {i.hp}', font, red, 550, (screen_height - bottom_panel + 10) + count * 60)
+
+def win_lose_text(result):
+    global character_gold
+    if result == 'win':
+        draw_text('You Win!', font, green, screen_width // 2 - 100, screen_height // 2)
+        character_gold += 300  # Add 300 gold for winning
+    elif result == 'lose':
+        draw_text('You Lose!', font, red, screen_width // 2 - 100, screen_height // 2)
+        character_gold += 50  # Add 50 gold for losing
+
+    save_gold(character_gold)  # Save the updated gold amount
 
 # Fighter class
 class Fighter():
@@ -76,9 +117,11 @@ class Fighter():
         self.rect.center = (x, y)
 
     def attack(self, target):
+        # Deal damage to enemy
         rand = random.randint(-5, 5)
         damage = self.strength + rand
         target.hp -= damage
+        # Check if target has died
         if target.hp < 1:
             target.hp = 0
             target.alive = False
@@ -86,15 +129,10 @@ class Fighter():
         damage_text_group.add(damage_text)
 
     def draw(self):
-        if self.alive:
+        if self.alive:  # Only draw if the fighter is alive
             screen.blit(self.image, self.rect)
 
-def win_lose_text(result):
-    if result == 'win':
-        draw_text('You Win!', font, green, screen_width // 2 - 100, screen_height // 2)
-    elif result == 'lose':
-        draw_text('You Lose!', font, red, screen_width // 2 - 100, screen_height // 2)
-
+# HealthBar class
 class HealthBar():
     def __init__(self, x, y, hp, max_hp):
         self.x = x
@@ -103,11 +141,14 @@ class HealthBar():
         self.max_hp = max_hp
 
     def draw(self, hp):
+        # Update with new health
         self.hp = hp
+        # Calculate health ratio
         ratio = self.hp / self.max_hp
         pygame.draw.rect(screen, red, (self.x, self.y, 150, 20))
         pygame.draw.rect(screen, green, (self.x, self.y, 150 * ratio, 20))
 
+# DamageText class
 class DamageText(pygame.sprite.Sprite):
     def __init__(self, x, y, damage, colour):
         pygame.sprite.Sprite.__init__(self)
@@ -117,7 +158,9 @@ class DamageText(pygame.sprite.Sprite):
         self.counter = 0
 
     def update(self):
+        # Move damage text up
         self.rect.y -= 1
+        # Delete the text after a few seconds
         self.counter += 1
         if self.counter > 30:
             self.kill()
@@ -125,20 +168,12 @@ class DamageText(pygame.sprite.Sprite):
 # Create sprite group for damage text
 damage_text_group = pygame.sprite.Group()
 
-# Create fighters
-player_creature = Fighter(200, 260, 'player_creature', 30, 10, 3)
+# Create fighters using character stats
+player_creature = Fighter(200, 260, 'player_creature', character_stats['max_hp'], character_stats['base_damage'], character_stats['potions'])
+bandit1 = Fighter(550, 270, 'Bandit', 20, 6, 1)
+bandit2 = Fighter(700, 270, 'Bandit', 20, 6, 1)
 
-# Base stats for the Bandit
-base_bandit_hp = 20
-base_bandit_strength = 6
-
-# Apply the damage multiplier based on the difficulty level
-bandit1 = Fighter(550, 270, 'Bandit', base_bandit_hp, int(base_bandit_strength * damage_multiplier), 1)
-bandit2 = Fighter(700, 270, 'Bandit', base_bandit_hp, int(base_bandit_strength * damage_multiplier), 1)
-
-bandit_list = []
-bandit_list.append(bandit1)
-bandit_list.append(bandit2)
+bandit_list = [bandit1, bandit2]
 
 # Create health bars
 player_creature_health_bar = HealthBar(100, screen_height - bottom_panel + 40, player_creature.hp, player_creature.max_hp)
@@ -155,20 +190,28 @@ result = None
 
 while run:
     clock.tick(fps)
+
+    # Draw background
     draw_bg()
+
+    # Draw panel
     draw_panel()
     player_creature_health_bar.draw(player_creature.hp)
     bandit1_health_bar.draw(bandit1.hp)
     bandit2_health_bar.draw(bandit2.hp)
 
+    # Check if game over
     if not game_over:
+        # Draw fighters
         player_creature.draw()
         for bandit in bandit_list:
-            bandit.draw()
+            bandit.draw()  # Only alive bandits will be drawn
 
+        # Draw the damage text
         damage_text_group.update()
         damage_text_group.draw(screen)
 
+        # Control player actions
         attack = False
         potion = False
         target = None
@@ -186,8 +229,10 @@ while run:
         if potion_button.draw():
             potion = True
 
+        # Show number of potions remaining
         draw_text(str(player_creature.potions), font, red, 150, screen_height - bottom_panel + 70)
 
+        # Player action
         if player_creature.alive:
             if current_fighter == 1:
                 action_cooldown += 1
@@ -198,6 +243,7 @@ while run:
                         action_cooldown = 0
 
                     if potion and player_creature.potions > 0:
+                        potion_effect = int(20 * character_stats['potion_effectiveness'])  # Adjust potion effectiveness
                         heal_amount = min(potion_effect, player_creature.max_hp - player_creature.hp)
                         player_creature.hp += heal_amount
                         player_creature.hp = min(player_creature.hp, player_creature.max_hp)
@@ -207,6 +253,7 @@ while run:
                         current_fighter += 1
                         action_cooldown = 0
 
+        # Enemy action
         for count, bandit in enumerate(bandit_list):
             if current_fighter == 2 + count:
                 if bandit.alive:
@@ -228,19 +275,24 @@ while run:
                 else:
                     current_fighter += 1
 
+        # If all fighters have had a turn, reset
         if current_fighter > total_fighters:
             current_fighter = 1
 
+        # Check if all enemies are defeated
         if all(bandit.alive == False for bandit in bandit_list):
             game_over = True
             result = 'win'
 
+        # Check if player is defeated
         if player_creature.alive == False:
             game_over = True
             result = 'lose'
     else:
+        # Draw win/lose message and update gold
         win_lose_text(result)
 
+    # Event handling
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             run = False
@@ -252,4 +304,5 @@ while run:
     pygame.display.update()
 
 pygame.quit()
+
 sys.exit()

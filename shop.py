@@ -14,7 +14,7 @@ pygame.display.set_caption("Shop")
 
 WHITE = (255, 255, 255)
 GRAY = (100, 100, 100)
-Yellow = (255, 255, 0)
+YELLOW = (255, 255, 0)
 
 font = pygame.font.Font(None, 50)
 gold_font = pygame.font.Font(None, 40)
@@ -61,15 +61,34 @@ def load_gold():
             return data.get("character_gold", 0)
     return 0
 
-# Save gold amount
 def save_gold(gold):
     with open("character_gold.json", "w") as file:
         json.dump({"character_gold": gold}, file)
 
-# Main menu loop
+def load_character_stats():
+    if os.path.exists("character_stats.json"):
+        with open("character_stats.json", "r") as stats_file:
+            return json.load(stats_file)
+    else:
+        return {
+            "base_damage": 10,
+            "max_hp": 30,
+            "current_hp": 30,
+            "potion_effectiveness": 1.0,
+            "potions": 3
+        }
+
+def save_character_stats(stats):
+    with open("character_stats.json", "w") as stats_file:
+        json.dump(stats, stats_file)
+
 def run_shop(character):
+    # Load character's current gold from the file or use initial value
+    character.gold = load_gold()
     current_gold = character.gold
+    character_stats = load_character_stats()
     shop_page = True
+    
     while shop_page:
         # Get current screen size
         SCREEN_WIDTH, SCREEN_HEIGHT = screen.get_size()
@@ -80,7 +99,7 @@ def run_shop(character):
 
         # Display current gold
         gold_text = f"Gold: {current_gold}"
-        draw_text(gold_text, gold_font, Yellow, 10, 10)
+        draw_text(gold_text, gold_font, YELLOW, 10, 10)
 
         # Draw images above buttons
         screen.blit(item1_image, image1_rect.topleft)
@@ -105,22 +124,25 @@ def run_shop(character):
 
             # Purchasing
             if event.type == pygame.MOUSEBUTTONDOWN:
-                if purchase1_rect.collidepoint(event.pos):
-                    if current_gold >= 100:
-                        current_gold -= 100
-                        character.bag.add_item('potion')
-                        
-                elif purchase2_rect.collidepoint(event.pos):
-                    if current_gold >= 200:
-                        current_gold -= 200
-                        character.bag.add_item('super_potion')
-                        
-                elif purchase3_rect.collidepoint(event.pos):
-                    if current_gold >= 300:
-                        current_gold -= 300
-                        character.bag.add_item('ultimate_potion')
+                if purchase1_rect.collidepoint(event.pos) and current_gold >= 100:
+                    current_gold -= 100
+                    character_stats["base_damage"] += 10  # Increase base damage
+                elif purchase2_rect.collidepoint(event.pos) and current_gold >= 200:
+                    current_gold -= 200
+                    character_stats["max_hp"] += 20  # Increase max health
+                    character_stats["current_hp"] += 20  # Heal the player with the increased health
+                elif purchase3_rect.collidepoint(event.pos) and current_gold >= 300:
+                    current_gold -= 300
+                    character_stats["potion_effectiveness"] *= 1.3  # Increase potion effectiveness by 30%
+                    character_stats["potions"] += 1  # Increase potion count
+
+                # Save the updated gold and character stats after every purchase
+                save_gold(current_gold)
+                save_character_stats(character_stats)
 
         pygame.display.update()
 
     character.gold = current_gold
+    save_gold(character.gold)
+    save_character_stats(character_stats)
     return current_gold
