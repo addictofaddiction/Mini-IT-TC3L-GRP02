@@ -24,6 +24,7 @@ def load_character_stats():
         with open("character_stats.json", "r") as stats_file:
             return json.load(stats_file)
     else:
+        # Initialize default character stats if file doesn't exist
         return {
             "base_damage": 10,
             "max_hp": 30,
@@ -259,8 +260,10 @@ while run:
                 if bandit.alive:
                     action_cooldown += 1
                     if action_cooldown >= action_wait_time:
+                        # Define the potion effectiveness for the bandit
+                        bandit_potion_effect = 20  
                         if (bandit.hp / bandit.max_hp) < 0.5 and bandit.potions > 0:
-                            heal_amount = min(potion_effect, bandit.max_hp - bandit.hp)
+                            heal_amount = min(bandit_potion_effect, bandit.max_hp - bandit.hp)
                             bandit.hp += heal_amount
                             bandit.hp = min(bandit.hp, bandit.max_hp)
                             bandit.potions -= 1
